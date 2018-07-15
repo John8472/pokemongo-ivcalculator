@@ -339,55 +339,6 @@ function run()
 	}
 }
 
-function run_for_species(species, prefix)
-{
-
-}
-
-function do_export()
-{
-	var txt = '';
-
-	for(var x of $('#main_form').find('input, select')) {
-		x = $(x);
-
-		if( x.is(':disabled') ) continue;
-
-		var val = x.val();
-		if( x.is('[type="checkbox"]') ) {
-			val = x.is(':checked') ? 'true' : 'false';
-		}
-
-		txt += x.attr('id') + ' := ' + val + '\n';
-	}
-
-	$('#inexport').val( txt );
-}
-
-function do_import()
-{
-	$('#main_form').get(0).reset();
-
-	var txt = $('#inexport').val().split('\n');
-
-	for(line of txt) {
-		var parts = line.split(':=', 2);
-		if( parts.length < 2 ) continue;
-
-		var key = parts[0].trim();
-		var val = parts[1].trim();
-
-		var x = $('#main_form #' + key);
-
-		if( x.is('[type="checkbox"]') ) {
-			x.prop('checked', 'true' === val).change();
-		} else {
-			x.val(val).change();
-		}
-	}
-
-	run();
-}
 
 */
 

@@ -98,3 +98,62 @@ $(document).on('click', '#button_example', function() {
 	$('#specimen1_stardust').val(2500);
 	$('#button_run').click();
 });
+
+$(document).on('click', '#button_reset', function() {
+	$('#main_form input[type="checkbox"]').each(function() {
+		this.checked = this.defaultChecked;
+	});
+	$('#main_form input[type="text"], #main_form input[type="number"]').each(function() {
+		this.value = this.defaultValue;
+	});
+	$('#main_form select').each(function() {
+		let t = $(this);
+		t.data('select').val( t.find('option:first').val() );
+	});
+});
+
+$(document).on('click', '#button_import', function() {
+	$('#button_reset').click();
+
+	let txt = $('#imexport').val().split('\n');
+
+	for(let line of txt) {
+		let parts = line.split(':=', 2);
+		if( parts.length < 2 ) continue;
+
+		let key = parts[0].trim();
+		let val = parts[1].trim();
+
+		let x = $('#main_form #' + key);
+
+		if( x.is('[type="checkbox"]') ) {
+			x.prop('checked', 'true' === val).change();
+		} else if( x.is('select') ) {
+			x.data('select').val(val);
+		} else {
+			x.val(val);
+		}
+	}
+
+	$('#button_run').click();
+});
+
+$(document).on('click', '#button_export', function() {
+	var txt = '';
+
+	for(var x of $('#main_form').find('input, select')) {
+		x = $(x);
+
+		if( !x.attr('id') ) continue;
+		if( x.is(':disabled') ) continue;
+
+		var val = x.val();
+		if( x.is('[type="checkbox"]') ) {
+			val = x.is(':checked') ? 'true' : 'false';
+		}
+
+		txt += x.attr('id') + ' := ' + val + '\n';
+	}
+
+	$('#imexport').val( txt );
+});
