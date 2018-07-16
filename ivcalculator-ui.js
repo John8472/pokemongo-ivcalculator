@@ -74,12 +74,16 @@ $(document).on('click', '#button_run', function() {
 		let atk = IvCalculator.calc_atk(species, combo.atk, combo.lvl);
 		let def = IvCalculator.calc_def(species, combo.def, combo.lvl);
 
+		let iv_total = combo.sta + combo.atk + combo.def;
+		let iv_perc = iv_total / 45;
+
 		$('#output tbody').append(
 			$('<tr>')
-				.append($('<td>').text(combo.lvl))
+				.append($('<td>').text(combo.lvl + 1))
 				.append($('<td>').text(combo.sta + ' (' + Math.floor(sta) + ')'))
 				.append($('<td>').text(combo.atk + ' (' + Math.floor(atk) + ')'))
 				.append($('<td>').text(combo.def + ' (' + Math.floor(def) + ')'))
+				.append($('<td>').text((Math.floor( iv_perc * 1000 ) / 10) + '%'))
 		);
 	}
 });

@@ -131,6 +131,8 @@ class IvCalculator
 
 		for(var lvl_idx = measurement.min_lvl; lvl_idx <= measurement.max_lvl; ++lvl_idx) {
 
+			if( (lvl_idx % 2 == 1) && !measurement.was_powered) continue;
+
 			for(var it_sta = appraisal.min_stat.sta; it_sta <= appraisal.max_stat.sta; ++it_sta) {
 				if( IvCalculator.calc_hp(species, it_sta, lvl_idx) != measurement.hp ) continue;
 
