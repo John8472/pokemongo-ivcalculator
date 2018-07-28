@@ -77,6 +77,12 @@ $(document).on('click', '#button_run', function() {
 		let iv_total = combo.sta + combo.atk + combo.def;
 		let iv_perc = iv_total / 45;
 
+		var button = $('<button type="button">')
+			.data('combo', combo)
+			.addClass('button primary cycle small outline')
+			.text('\u21B4')
+		;
+
 		$('#output tbody').append(
 			$('<tr>')
 				.append($('<td>').text(combo.lvl + 1))
@@ -84,6 +90,7 @@ $(document).on('click', '#button_run', function() {
 				.append($('<td>').text(combo.atk + ' (' + Math.floor(atk) + ')'))
 				.append($('<td>').text(combo.def + ' (' + Math.floor(def) + ')'))
 				.append($('<td>').text((Math.floor( iv_perc * 1000 ) / 10) + '%'))
+				.append($('<td>').append(button))
 		);
 	}
 });
@@ -160,4 +167,33 @@ $(document).on('click', '#button_export', function() {
 	}
 
 	$('#imexport').val( txt );
+});
+
+$(document).on('click', '#output button', function() {
+	let species = {
+		sta: parseInt($('#species_sta').val(), 10),
+		atk: parseInt($('#species_atk').val(), 10),
+		def: parseInt($('#species_def').val(), 10)
+	};
+
+	let combo = $(this).data('combo');
+
+	$('#future tbody tr').remove();
+
+	for(let lvl_idx = combo.lvl; lvl_idx < 80; ++lvl_idx) {
+		let sta = IvCalculator.calc_sta(species, combo.sta, lvl_idx);
+		let atk = IvCalculator.calc_atk(species, combo.atk, lvl_idx);
+		let def = IvCalculator.calc_def(species, combo.def, lvl_idx);
+
+		let cp = IvCalculator.calc_cp(sta, atk, def);
+		let hp = IvCalculator.calc_hp(species, combo.sta, lvl_idx);
+
+		$('#future tbody').append(
+			$('<tr>')
+				.append($('<td>').text(lvl_idx + 1))
+				.append($('<td>').text(cp))
+				.append($('<td>').text(hp))
+				.append($('<td>').text(IvCalculator.power_up_table[lvl_idx][1]))
+		);
+	}
 });

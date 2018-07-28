@@ -147,10 +147,10 @@ class IvCalculator
 						var total_iv = it_sta + it_atk + it_def;
 						var combo_cp = IvCalculator.calc_cp(it_sta_val, it_atk_val, it_def_val);
 
-//						if( best_sta || best_atk || best_def ) {
-//							if( (best_sta || best_atk) && ((best_sta && best_atk) != (it_sta == it_atk)) ) continue;
-//							if( (best_sta || best_def) && ((best_sta && best_def) != (it_sta == it_def)) ) continue;
-//							if( (best_atk || best_def) && ((best_atk && best_def) != (it_atk == it_def)) ) continue;
+						if( appraisal.best_stat.sta || appraisal.best_stat.atk || appraisal.best_stat.def ) {
+							if( (appraisal.best_stat.sta || appraisal.best_stat.atk) && ((appraisal.best_stat.sta && appraisal.best_stat.atk) != (it_sta == it_atk)) ) continue;
+							if( (appraisal.best_stat.sta || appraisal.best_stat.def) && ((appraisal.best_stat.sta && appraisal.best_stat.def) != (it_sta == it_def)) ) continue;
+							if( (appraisal.best_stat.atk || appraisal.best_stat.def) && ((appraisal.best_stat.atk && appraisal.best_stat.def) != (it_atk == it_def)) ) continue;
 //
 //							if( (best_sta && !best_atk) && (it_sta < it_atk) ) continue;
 //							if( (best_sta && !best_def) && (it_sta < it_def) ) continue;
@@ -160,7 +160,7 @@ class IvCalculator
 //
 //							if( (best_def && !best_sta) && (it_def < it_sta) ) continue;
 //							if( (best_def && !best_atk) && (it_def < it_atk) ) continue;
-//						}
+						}
 
 						if( (0 < appraisal.total.iv.min) && (total_iv < appraisal.total.iv.min) ) continue;
 						if( (0 < appraisal.total.iv.max) && (appraisal.total.iv.max < total_iv) ) continue;
