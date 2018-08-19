@@ -206,144 +206,23 @@ class IvCalculator
 				continue;
 			}
 
-			throw 'TODO: Update list with multiple measurements';
+			possible_combos = possible_combos.filter(function(combo) {
+				return new_possible_combos.find(function(new_combo, idx, array) {
+					let res =
+						(new_combo.sta == this.sta)
+					&&
+						(new_combo.atk == this.atk)
+					&&
+						(new_combo.def == this.def)
+					;
+					return res;
+				}, combo);
+			});
 		}
 
 		return possible_combos;
 	}
-
-
 }
-
-
-
-/**
-function isEquivalent(a, b)
-{
-	// Create arrays of property names
-	var aProps = Object.getOwnPropertyNames(a);
-	var bProps = Object.getOwnPropertyNames(b);
-
-	// If number of properties is different,
-	// objects are not equivalent
-	if (aProps.length != bProps.length) {
-		return false;
-	}
-
-	for (var i = 0; i < aProps.length; i++) {
-		var propName = aProps[i];
-
-		// If values of same property are not equal,
-		// objects are not equivalent
-		if (a[propName] !== b[propName]) {
-			return false;
-		}
-	}
-
-	// If we made it this far, objects
-	// are considered equivalent
-	return true;
-}
-
-
-
-function run()
-{
-
-
-	var lvl_opts = [];
-
-	var possible_combos = run_for_species(species, 'specimen1');
-	if( false === possible_combos ) {
-		alert('First row must be filled');
-		return;
-	}
-	for(var x of possible_combos) {
-		if( lvl_opts.indexOf(x['lvl']) < 0 ) {
-			lvl_opts.push(x['lvl']);
-		}
-
-		delete x['lvl'];
-	}
-
-	for(var i = 2; 1 == $('#specimen' + i + '_hp').length; ++i) {
-		var new_combos = run_for_species(species, 'specimen' + i);
-		if( false === new_combos ) continue;
-
-		for(var x of new_combos) {
-			if( lvl_opts.indexOf(x['lvl']) < 0 ) {
-				lvl_opts.push(x['lvl']);
-			}
-
-			delete x['lvl'];
-		}
-
-		var tmp = possible_combos;
-		possible_combos = [];
-		for(var x of tmp) {
-			var found = false;
-			for(var y of new_combos) {
-				if( isEquivalent(x, y) ) {
-					found = true;
-					break;
-				}
-			}
-			if( !found ) continue;
-
-			possible_combos.push(x);
-		}
-	}
-
-
-	$('#result tbody tr').remove();
-
-	var min_lvl = -1;
-
-	for(var lvl_idx of lvl_opts) {
-		if( (-1 == min_lvl) || (min_lvl > lvl_idx) ) {
-			min_lvl = lvl_idx;
-		}
-	}
-
-	for(var lvl_idx = min_lvl; lvl_idx < 80; ++lvl_idx) {
-		var cp_opts = [];
-		for(var combo of possible_combos) {
-			var sta = calc_sta(species, combo.sta, lvl_idx);
-			var atk = calc_atk(species, combo.atk, lvl_idx);
-			var def = calc_def(species, combo.def, lvl_idx);
-
-			var cp = calc_cp(sta, atk, def);
-			if( cp_opts.indexOf(cp) < 0 ) {
-				cp_opts.push(cp);
-			}
-		}
-
-		for(var combo of possible_combos) {
-			var sta = calc_sta(species, combo.sta, lvl_idx);
-			var atk = calc_atk(species, combo.atk, lvl_idx);
-			var def = calc_def(species, combo.def, lvl_idx);
-
-			$('#result tbody').append(
-				$('<tr>')
-					.append($('<td>').text(lvl_idx + 1))
-					.append($('<td>').text(combo.sta))
-					.append($('<td>').text(combo.atk))
-					.append($('<td>').text(combo.def))
-					.append($('<td>').text(Math.round(100 * sta) / 100))
-					.append($('<td>').text(Math.round(100 * atk) / 100))
-					.append($('<td>').text(Math.round(100 * def) / 100))
-					.append($('<td>').text(calc_cp(sta, atk, def)))
-					.append($('<td>').text(calc_hp(species, combo.sta, lvl_idx)))
-					.append($('<td>').text(power_up_table[lvl_idx][1]))
-					.addClass((cp_opts.length == 1) ? 'cp_similar' : 'cp_different')
-			);
-		}
-	}
-}
-
-
-*/
-
 
 // https://bulbapedia.bulbagarden.net/wiki/Power_Up
 IvCalculator.power_up_table = [[1,200,1,0.094],[2,200,1,0.1351374318],[3,200,1,0.16639787],[4,200,1,0.192650919],[5,400,1,0.21573247],[6,400,1,0.2365726613],[7,400,1,0.25572005],[8,400,1,0.2735303812],[9,600,1,0.29024988],[10,600,1,0.3060573775],[11,600,1,0.3210876],[12,600,1,0.3354450362],[13,800,1,0.34921268],[14,800,1,0.3624577511],[15,800,1,0.37523559],[16,800,1,0.3875924064],[17,1000,1,0.39956728],[18,1000,1,0.4111935514],[19,1000,1,0.42250001],[20,1000,1,0.4335116883],[21,1300,2,0.44310755],[22,1300,2,0.4530599591],[23,1300,2,0.46279839],[24,1300,2,0.4723360832],[25,1600,2,0.48168495],[26,1600,2,0.4908558003],[27,1600,2,0.49985844],[28,1600,2,0.508701765],[29,1900,2,0.51739395],[30,1900,2,0.5259425113],[31,1900,2,0.53435433],[32,1900,2,0.542635767],[33,2200,2,0.55079269],[34,2200,2,0.5588305763],[35,2200,2,0.56675452],[36,2200,2,0.574569153],[37,2500,2,0.58227891],[38,2500,2,0.5898879171],[39,2500,2,0.59740001],[40,2500,2,0.6048188139],[41,3000,3,0.61215729],[42,3000,3,0.6194041117],[43,3000,3,0.62656713],[44,3000,3,0.6336491729],[45,3500,3,0.64065295],[46,3500,3,0.6475809666],[47,3500,3,0.65443563],[48,3500,3,0.6612192524],[49,4000,3,0.667934],[50,4000,3,0.6745818959],[51,4000,4,0.68116492],[52,4000,4,0.6876849236],[53,4500,4,0.69414365],[54,4500,4,0.70054287],[55,4500,4,0.70688421],[56,4500,4,0.713169119],[57,5000,4,0.71939909],[58,5000,4,0.7255756036],[59,5000,4,0.7317],[60,5000,4,0.734741036],[61,6000,6,0.73776948],[62,6000,6,0.7407855738],[63,6000,6,0.74378943],[64,6000,6,0.7467812109],[65,7000,8,0.74976104],[66,7000,8,0.7527290867],[67,7000,8,0.75568551],[68,7000,8,0.7586303783],[69,8000,10,0.76156384],[70,8000,10,0.7644860647],[71,8000,10,0.76739717],[72,8000,10,0.7702972656],[73,9000,12,0.7731865],[74,9000,12,0.7760649616],[75,9000,12,0.77893275],[76,9000,12,0.7817900548],[77,10000,15,0.78463697],[78,10000,15,0.7874735776],[79,10000,15,0.79030001],[80,10000,15,0.7931163638]];

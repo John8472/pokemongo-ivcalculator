@@ -25,6 +25,13 @@ $(document).on('change', '#species_id', function() {
 });
 
 $(document).on('click', '#button_run', function() {
+	let grade_to_class = {
+		'S': 'primary',
+		'A': 'secondary',
+		'B': 'success',
+		'C': 'yellow'
+	};
+
 	let species = {
 		sta: parseInt($('#species_sta').val(), 10),
 		atk: parseInt($('#species_atk').val(), 10),
@@ -77,6 +84,23 @@ $(document).on('click', '#button_run', function() {
 		let iv_total = combo.sta + combo.atk + combo.def;
 		let iv_perc = iv_total / 45;
 
+		let grade = '?';
+		if( 45 === iv_total ) {
+			grade = 'S';
+		} else if( iv_total >= 41 ) {
+			grade = 'A';
+		} else if( iv_total >= 37 ) {
+			grade = 'B';
+		} else if( iv_total >= 33 ) {
+			grade = 'C';
+		} else if( iv_total >= 29 ) {
+			grade = 'D';
+		} else if( iv_total >= 25 ) {
+			grade = 'E';
+		} else {
+			grade = 'F';
+		}
+
 		var button = $('<button type="button">')
 			.data('combo', combo)
 			.addClass('button primary cycle small outline')
@@ -84,12 +108,13 @@ $(document).on('click', '#button_run', function() {
 		;
 
 		$('#output tbody').append(
-			$('<tr>')
+			$('<tr>').addClass(grade_to_class[grade])
 				.append($('<td>').text(combo.lvl + 1))
 				.append($('<td>').text(combo.sta + ' (' + Math.floor(sta) + ')'))
 				.append($('<td>').text(combo.atk + ' (' + Math.floor(atk) + ')'))
 				.append($('<td>').text(combo.def + ' (' + Math.floor(def) + ')'))
 				.append($('<td>').text((Math.floor( iv_perc * 1000 ) / 10) + '%'))
+				.append($('<td>').text(grade))
 				.append($('<td>').append(button))
 		);
 	}
