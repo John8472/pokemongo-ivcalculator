@@ -120,6 +120,17 @@ $(document).on('click', '#button_run', function() {
 	}
 });
 
+$(document).on('click', '#button_more', function() {
+	let i = 1;
+	for(; (i <= 100) && (0 < $('#specimen' + i + '_cp').length); ++i);
+
+	let template = '<div class="form-group specimen-group"><label for="specimen1_cp">Values</label><div class="row"><div class="cell-md-6"><input type="number" id="specimen1_cp" min="10" max="9999" data-role="input" data-prepend="CP"></div><div class="cell-md-6"><input type="number" id="specimen1_hp" min="10" max="9999" data-role="input" data-prepend="HP"></div></div><div class="row"><div class="cell-md-6"><input type="number" id="specimen1_stardust" min="200" max="10000" data-role="input" data-prepend="Stardust"></div><div class="cell-md-6"><select id="specimen1_powered" data-role="select" data-prepend="Powered?"><option value="1" selected>Yes or maybe</option><option value="0">Definately not</option></select></div></div></div>';
+	let node = $(template.replace(/specimen1/g, 'specimen' + i));
+	node.find('label').text('Values ' + i);
+
+	$('#specimen' + (i - 1) + '_cp').parents('.form-group').after(node);
+});
+
 $(document).on('click', '#button_example', function() {
 	$('#species_id').data('select').val(4);
 
@@ -136,6 +147,8 @@ $(document).on('click', '#button_example', function() {
 });
 
 $(document).on('click', '#button_reset', function() {
+	$('.specimen-group:gt(0)').remove();
+
 	$('#main_form input[type="checkbox"]').each(function() {
 		this.checked = this.defaultChecked;
 	});
@@ -160,11 +173,18 @@ $(document).on('click', '#button_import', function() {
 		let key = parts[0].trim();
 		let val = parts[1].trim();
 
+		if( key.startsWith('specimen') ) {
+			let i = parseInt(key.split('_')[0].substr(8), 10);
+			while( $('.specimen-group').length < i ) {
+				$('#button_more').click();
+			}
+		}
+
 		let x = $('#main_form #' + key);
 
 		if( x.is('[type="checkbox"]') ) {
 			x.prop('checked', 'true' === val).change();
-		} else if( x.is('select') ) {
+		} else if( x.is('select') && x.data('select') ) {
 			x.data('select').val(val);
 		} else {
 			x.val(val);
