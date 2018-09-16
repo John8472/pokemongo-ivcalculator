@@ -41,8 +41,8 @@ $(document).on('click', '#button_run', function() {
 	let appraisal = {
 		total: {
 			iv: {
-				min: parseInt($('#total_iv_val').data('select').val().split('-')[0], 10),
-				max: parseInt($('#total_iv_val').data('select').val().split('-')[1], 10)
+				min: parseInt($('#total_iv_val').val().split('-')[0], 10),
+				max: parseInt($('#total_iv_val').val().split('-')[1], 10)
 			}
 		},
 		best_stat: {
@@ -50,8 +50,8 @@ $(document).on('click', '#button_run', function() {
 			atk: $('#best_atk').is(':checked'),
 			def: $('#best_def').is(':checked'),
 			iv: {
-				min: parseInt($('#best_iv_val').data('select').val().split('-')[0], 10),
-				max: parseInt($('#best_iv_val').data('select').val().split('-')[1], 10)
+				min: parseInt($('#best_iv_val').val().split('-')[0], 10),
+				max: parseInt($('#best_iv_val').val().split('-')[1], 10)
 			}
 		}
 	};
@@ -77,25 +77,18 @@ $(document).on('click', '#button_run', function() {
 	$('#output tbody tr').remove();
 
 	for(let combo of possible_combos) {
-		let sta = IvCalculator.calc_sta(species, combo.sta, combo.lvl);
-		let atk = IvCalculator.calc_atk(species, combo.atk, combo.lvl);
-		let def = IvCalculator.calc_def(species, combo.def, combo.lvl);
-
-		let iv_total = combo.sta + combo.atk + combo.def;
-		let iv_perc = iv_total / 45;
-
 		let grade = '?';
-		if( 45 === iv_total ) {
+		if( 45 === combo.iv_total() ) {
 			grade = 'S';
-		} else if( iv_total >= 41 ) {
+		} else if( combo.iv_total() >= 41 ) {
 			grade = 'A';
-		} else if( iv_total >= 37 ) {
+		} else if( combo.iv_total() >= 37 ) {
 			grade = 'B';
-		} else if( iv_total >= 33 ) {
+		} else if( combo.iv_total() >= 33 ) {
 			grade = 'C';
-		} else if( iv_total >= 29 ) {
+		} else if( combo.iv_total() >= 29 ) {
 			grade = 'D';
-		} else if( iv_total >= 25 ) {
+		} else if( combo.iv_total() >= 25 ) {
 			grade = 'E';
 		} else {
 			grade = 'F';
@@ -110,10 +103,10 @@ $(document).on('click', '#button_run', function() {
 		$('#output tbody').append(
 			$('<tr>').addClass(grade_to_class[grade])
 				.append($('<td>').text(combo.lvl + 1))
-				.append($('<td>').text(combo.sta + ' (' + Math.floor(sta) + ')'))
-				.append($('<td>').text(combo.atk + ' (' + Math.floor(atk) + ')'))
-				.append($('<td>').text(combo.def + ' (' + Math.floor(def) + ')'))
-				.append($('<td>').text((Math.floor( iv_perc * 1000 ) / 10) + '%'))
+				.append($('<td>').text(combo.iv_sta + ' (' + Math.floor(combo.sta()) + ')'))
+				.append($('<td>').text(combo.iv_atk + ' (' + Math.floor(combo.atk()) + ')'))
+				.append($('<td>').text(combo.iv_def + ' (' + Math.floor(combo.def()) + ')'))
+				.append($('<td>').text((Math.floor( combo.iv_perc() * 1000 ) / 10) + '%'))
 				.append($('<td>').text(grade))
 				.append($('<td>').append(button))
 		);
@@ -221,24 +214,50 @@ $(document).on('click', '#output button', function() {
 		def: parseInt($('#species_def').val(), 10)
 	};
 
-	let combo = $(this).data('combo');
+	let combo = $(this).data('combo').clone();
 
 	$('#future tbody tr').remove();
 
-	for(let lvl_idx = combo.lvl; lvl_idx < 80; ++lvl_idx) {
-		let sta = IvCalculator.calc_sta(species, combo.sta, lvl_idx);
-		let atk = IvCalculator.calc_atk(species, combo.atk, lvl_idx);
-		let def = IvCalculator.calc_def(species, combo.def, lvl_idx);
+	let combo_list = [];
+	for(let x of $('#output button')) {
+		combo_list.push($(x).data('combo').clone());
+	}
 
-		let cp = IvCalculator.calc_cp(sta, atk, def);
-		let hp = IvCalculator.calc_hp(species, combo.sta, lvl_idx);
+	for(; combo.lvl < 80; ++combo.lvl) {
+		let matching_combo_list = [];
+		for(let other_combo of combo_list) {
+			other_combo.lvl = combo.lvl;
 
-		$('#future tbody').append(
-			$('<tr>')
-				.append($('<td>').text(lvl_idx + 1))
-				.append($('<td>').text(cp))
-				.append($('<td>').text(hp))
-				.append($('<td>').text(IvCalculator.power_up_table[lvl_idx][1]))
-		);
+			let exists = matching_combo_list.find(function(a) {
+				return (a.cp() == other_combo.cp()) && (a.hp() == other_combo.hp());
+			});
+
+			if( undefined === exists ) {
+				matching_combo_list.push(other_combo);
+			}
+		}
+		console.log(matching_combo_list);
+
+		let tr = $('<tr>')
+			.append($('<td>').text(combo.lvl + 1))
+			.append($('<td>').text(combo.cp()))
+			.append($('<td>').text(combo.hp()))
+			.append($('<td>').text(IvCalculator.power_up_table[combo.lvl][1]))
+			.append($('<td>').text(IvCalculator.power_up_table[combo.lvl][2]))
+		;
+
+		if( matching_combo_list.length == combo_list.length ) {
+			//There is one different cp / hp for each combo
+			//This means that at this level you are guaranteed to know
+			//which combo is the richt one
+			tr.addClass('success');
+		} else if( 1 > matching_combo_list.length ) {
+			//There are at least two combinations possible
+			//While this doesn't give you the exact numbers,
+			//it at least narrows it down
+			tr.addClass('info');
+		} // else: Only 1 combo => all options are indistinguishable
+
+		$('#future tbody').append(tr);
 	}
 });

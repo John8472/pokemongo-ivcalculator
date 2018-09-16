@@ -1,5 +1,71 @@
 // UTF8
 
+class IvCalculatorCombo
+{
+	constructor(species, lvl, iv_sta, iv_atk, iv_def)
+	{
+		this.species = species;
+		this.lvl = lvl;
+		this.iv_sta = iv_sta;
+		this.iv_atk = iv_atk;
+		this.iv_def = iv_def;
+	}
+
+	clone()
+	{
+		return new IvCalculatorCombo(this.species, this.lvl, this.iv_sta, this.iv_atk, this.iv_def);
+	}
+
+	sta()
+	{
+		return IvCalculator.calc_sta(this.species, this.iv_sta, this.lvl);
+	}
+
+	atk()
+	{
+		return IvCalculator.calc_atk(this.species, this.iv_atk, this.lvl);
+	}
+
+	def()
+	{
+		return IvCalculator.calc_def(this.species, this.iv_def, this.lvl);
+	}
+
+	iv_total()
+	{
+		return this.iv_sta + this.iv_atk + this.iv_def;
+	}
+
+	iv_perc()
+	{
+		return this.iv_total() / 45;
+	}
+
+	hp()
+	{
+		return IvCalculator.calc_hp(this.species, this.iv_sta, this.lvl);
+	}
+
+	cp()
+	{
+		return IvCalculator.calc_cp(this.sta(), this.atk(), this.def());
+	}
+
+	compare_iv(oth)
+	{
+		if( this.iv_sta < oth.iv_sta ) return -1;
+		if( oth.iv_sta < this.iv_sta ) return 1;
+
+		if( this.iv_atk < oth.iv_atk ) return -1;
+		if( oth.iv_atk < this.iv_atk ) return 1;
+
+		if( this.iv_def < oth.iv_def ) return -1;
+		if( oth.iv_def < this.iv_def ) return 1;
+
+		return 0;
+	}
+};
+
 class IvCalculator
 {
 	/**
@@ -45,6 +111,8 @@ class IvCalculator
 	/**
 	 * \brief
 	 * Calculates the combat power value based on the stamina, attack and defense
+	 *
+	 * Note: These are not the IV values, but the actual values
 	 */
 	static
 	calc_cp(sta, atk, def)
@@ -167,12 +235,7 @@ class IvCalculator
 
 						if( combo_cp != measurement.cp ) continue;
 
-						possible_combos.push({
-							lvl: lvl_idx,
-							sta: it_sta,
-							atk: it_atk,
-							def: it_def
-						});
+						possible_combos.push(new IvCalculatorCombo(species, lvl_idx, it_sta, it_atk, it_def));
 					}
 				}
 			}
@@ -208,14 +271,7 @@ class IvCalculator
 
 			possible_combos = possible_combos.filter(function(combo) {
 				return new_possible_combos.find(function(new_combo, idx, array) {
-					let res =
-						(new_combo.sta == this.sta)
-					&&
-						(new_combo.atk == this.atk)
-					&&
-						(new_combo.def == this.def)
-					;
-					return res;
+					return 0 == combo.compare_iv(new_combo);
 				}, combo);
 			});
 		}
