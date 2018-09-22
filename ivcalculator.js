@@ -105,7 +105,9 @@ class IvCalculator
 	static
 	calc_hp(species, iv, lvl)
 	{
-		return Math.floor( IvCalculator.calc_sta(species, iv, lvl) );
+		let hp = Math.floor( IvCalculator.calc_sta(species, iv, lvl) );
+		if( hp < 10 ) hp = 10;
+		return hp;
 	}
 
 	/**
@@ -117,7 +119,9 @@ class IvCalculator
 	static
 	calc_cp(sta, atk, def)
 	{
-		return Math.floor( Math.sqrt(sta) * atk * Math.sqrt(def) * 0.1);
+		let cp = Math.floor( Math.sqrt(sta) * atk * Math.sqrt(def) * 0.1);
+		if( cp < 10 ) cp = 10;
+		return cp;
 	}
 
 	constructor()
@@ -126,9 +130,9 @@ class IvCalculator
 	ua_iv_range(appraisal)
 	{
 		appraisal.min_stat = {
-			sta: 1,
-			atk: 1,
-			def: 1
+			sta: 0,
+			atk: 0,
+			def: 0
 		};
 
 		appraisal.max_stat = {
@@ -219,15 +223,15 @@ class IvCalculator
 							if( (appraisal.best_stat.sta || appraisal.best_stat.atk) && ((appraisal.best_stat.sta && appraisal.best_stat.atk) != (it_sta == it_atk)) ) continue;
 							if( (appraisal.best_stat.sta || appraisal.best_stat.def) && ((appraisal.best_stat.sta && appraisal.best_stat.def) != (it_sta == it_def)) ) continue;
 							if( (appraisal.best_stat.atk || appraisal.best_stat.def) && ((appraisal.best_stat.atk && appraisal.best_stat.def) != (it_atk == it_def)) ) continue;
+
+							if( (appraisal.best_stat.sta && !appraisal.best_stat.atk) && (it_sta < it_atk) ) continue;
+							if( (appraisal.best_stat.sta && !appraisal.best_stat.def) && (it_sta < it_def) ) continue;
 //
-//							if( (best_sta && !best_atk) && (it_sta < it_atk) ) continue;
-//							if( (best_sta && !best_def) && (it_sta < it_def) ) continue;
+//							if( (appraisal.best_stat.atk && !appraisal.best_stat.sta) && (it_atk < it_sta) ) continue;
+//							if( (appraisal.best_stat.atk && !appraisal.best_stat.def) && (it_atk < it_def) ) continue;
 //
-//							if( (best_atk && !best_sta) && (it_atk < it_sta) ) continue;
-//							if( (best_atk && !best_def) && (it_atk < it_def) ) continue;
-//
-//							if( (best_def && !best_sta) && (it_def < it_sta) ) continue;
-//							if( (best_def && !best_atk) && (it_def < it_atk) ) continue;
+//							if( (appraisal.best_stat.def && !appraisal.best_stat.sta) && (it_def < it_sta) ) continue;
+//							if( (appraisal.best_stat.def && !appraisal.best_stat.atk) && (it_def < it_atk) ) continue;
 						}
 
 						if( (0 < appraisal.total.iv.min) && (total_iv < appraisal.total.iv.min) ) continue;
