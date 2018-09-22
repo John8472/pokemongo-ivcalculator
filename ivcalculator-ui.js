@@ -33,10 +33,15 @@ $(document).on('click', '#button_run', function() {
 	};
 
 	let species = {
+		id: parseInt($('#species_id').val(), 10),
 		sta: parseInt($('#species_sta').val(), 10),
 		atk: parseInt($('#species_atk').val(), 10),
 		def: parseInt($('#species_def').val(), 10)
 	};
+
+	if( species.id ) {
+		species.name = IvCalculator.species_table[ species.id - 1 ][1];
+	}
 
 	let appraisal = {
 		total: {
@@ -75,6 +80,7 @@ $(document).on('click', '#button_run', function() {
 	let possible_combos = calculator.calculate(species, appraisal, measurement_list);
 
 	$('#output tbody tr').remove();
+	$('#future tbody tr').remove();
 
 	for(let combo of possible_combos) {
 		let grade = '?';
@@ -102,7 +108,7 @@ $(document).on('click', '#button_run', function() {
 
 		$('#output tbody').append(
 			$('<tr>').addClass(grade_to_class[grade])
-				.append($('<td>').text(combo.lvl + 1))
+				.append($('<td>').text(1 + (combo.lvl / 2)))
 				.append($('<td>').text(combo.iv_sta + ' (' + Math.floor(combo.sta()) + ')'))
 				.append($('<td>').text(combo.iv_atk + ' (' + Math.floor(combo.atk()) + ')'))
 				.append($('<td>').text(combo.iv_def + ' (' + Math.floor(combo.def()) + ')'))
@@ -208,55 +214,122 @@ $(document).on('click', '#button_export', function() {
 });
 
 $(document).on('click', '#output button', function() {
-	let species = {
-		sta: parseInt($('#species_sta').val(), 10),
-		atk: parseInt($('#species_atk').val(), 10),
-		def: parseInt($('#species_def').val(), 10)
-	};
+	$('.iv_future tbody tr').remove();
 
-	let combo = $(this).data('combo').clone();
+	let template = $('.iv_future').eq(0).parent().clone();
 
-	$('#future tbody tr').remove();
+	$('.iv_future').parents('._evolution_tab_contents_one').remove();
 
-	let combo_list = [];
-	for(let x of $('#output button')) {
-		combo_list.push($(x).data('combo').clone());
-	}
+	$('#_evolution_tabs li').remove();
 
-	for(; combo.lvl < 80; ++combo.lvl) {
-		let matching_combo_list = [];
-		for(let other_combo of combo_list) {
-			other_combo.lvl = combo.lvl;
 
-			let exists = matching_combo_list.find(function(a) {
-				return (a.cp() == other_combo.cp()) && (a.hp() == other_combo.hp());
-			});
+	let selected_combo = $(this).data('combo').clone();
 
-			if( undefined === exists ) {
-				matching_combo_list.push(other_combo);
+	let species_list = new Map();
+	species_list.set(selected_combo.species.id, selected_combo.species);
+
+	if( selected_combo.species.id ) {
+		let new_species = true;
+		while( new_species ) {
+			new_species = false;
+			for(let x of IvCalculator.evolution_mapping) {
+				if( species_list.has(x[1]) ) {
+					//Already added
+					continue;
+				}
+
+				if( !species_list.has(x[0]) ) {
+					//Irrelevant
+					continue;
+				}
+
+				let species_data = IvCalculator.species_table[ x[1] - 1 ];
+				if( !species_data ) {
+					//Not yet in the game
+					continue;
+				}
+
+				species = {
+					id: species_data[0],
+					name: species_data[1],
+					sta: species_data[2],
+					atk: species_data[3],
+					def: species_data[4]
+				};
+
+				species_list.set(species.id, species);
+				new_species = true;
 			}
 		}
-
-		let tr = $('<tr>')
-			.append($('<td>').text(combo.lvl + 1))
-			.append($('<td>').text(combo.cp()))
-			.append($('<td>').text(combo.hp()))
-			.append($('<td>').text(IvCalculator.power_up_table[combo.lvl][1]))
-			.append($('<td>').text(IvCalculator.power_up_table[combo.lvl][2]))
-		;
-
-		if( matching_combo_list.length == combo_list.length ) {
-			//There is one different cp / hp for each combo
-			//This means that at this level you are guaranteed to know
-			//which combo is the richt one
-			tr.addClass('success');
-		} else if( 1 < matching_combo_list.length ) {
-			//There are at least two combinations possible
-			//While this doesn't give you the exact numbers,
-			//it at least narrows it down
-			tr.addClass('info');
-		} // else: Only 1 combo => all options are indistinguishable
-
-		$('#future tbody').append(tr);
 	}
+
+	let id_inc = 0;
+	for(let [species_id, species] of species_list) {
+		let tab = template.clone();
+
+		let combo = $(this).data('combo').clone();
+		combo.species = species;
+
+		let combo_list = [];
+		for(let x of $('#output button')) {
+			let other_combo = $(x).data('combo').clone();
+			other_combo.species = species;
+
+			combo_list.push(other_combo);
+		}
+
+		for(; combo.lvl < 80; ++combo.lvl) {
+			let matching_combo_list = [];
+			for(let other_combo of combo_list) {
+				other_combo.lvl = combo.lvl;
+
+				let exists = matching_combo_list.find(function(a) {
+					return (a.cp() == other_combo.cp()) && (a.hp() == other_combo.hp());
+				});
+
+				if( undefined === exists ) {
+					matching_combo_list.push(other_combo);
+				}
+			}
+
+			let tr = $('<tr>')
+				.append($('<td>').text(1 + (combo.lvl / 2)))
+				.append($('<td>').text(combo.cp()))
+				.append($('<td>').text(combo.hp()))
+				.append($('<td>').text(IvCalculator.power_up_table[combo.lvl][1]))
+				.append($('<td>').text(IvCalculator.power_up_table[combo.lvl][2]))
+			;
+
+			if( matching_combo_list.length == combo_list.length ) {
+				//There is one different cp / hp for each combo
+				//This means that at this level you are guaranteed to know
+				//which combo is the richt one
+				tr.addClass('success');
+			} else if( 1 < matching_combo_list.length ) {
+				//There are at least two combinations possible
+				//While this doesn't give you the exact numbers,
+				//it at least narrows it down
+				tr.addClass('info');
+			} // else: Only 1 combo => all options are indistinguishable
+
+			tab.find('tbody').append(tr);
+		}
+
+		$('#_evolution_tabs').append(
+			$('<li></li>').append(
+				$('<a>')
+					.attr('href', '#_evolution_' + id_inc)
+					.text(species.name)
+			)
+		);
+
+		tab.attr('id', '_evolution_' + id_inc)
+			.hide();
+
+		$('#_evolution_tab_contents').append(tab);
+
+		++id_inc;
+	}
+
+	$('#_evolution_tabs a:eq(0)').click();
 });
