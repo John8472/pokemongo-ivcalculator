@@ -236,7 +236,6 @@ $(document).on('click', '#output button', function() {
 				matching_combo_list.push(other_combo);
 			}
 		}
-		console.log(matching_combo_list);
 
 		let tr = $('<tr>')
 			.append($('<td>').text(combo.lvl + 1))
@@ -251,7 +250,7 @@ $(document).on('click', '#output button', function() {
 			//This means that at this level you are guaranteed to know
 			//which combo is the richt one
 			tr.addClass('success');
-		} else if( 1 > matching_combo_list.length ) {
+		} else if( 1 < matching_combo_list.length ) {
 			//There are at least two combinations possible
 			//While this doesn't give you the exact numbers,
 			//it at least narrows it down
