@@ -2,7 +2,7 @@ $(document).ready(function() {
 	let map = {};
 
 	map['0'] = 'Custom';
-	$(IvCalculator.species_table).each(function(idx, stats) {
+	$(IvCalculator.name_mapping).each(function(idx, stats) {
 		map[ '' + stats[0] ] = stats[1];
 	});
 
@@ -18,9 +18,9 @@ $(document).on('change', '#species_id', function() {
 
 		$('#custom_species input').prop('disabled', true);
 
-		$('#species_sta').val( IvCalculator.species_table[ id - 1 ][2] );
-		$('#species_atk').val( IvCalculator.species_table[ id - 1 ][3] );
-		$('#species_def').val( IvCalculator.species_table[ id - 1 ][4] );
+		$('#species_sta').val( IvCalculator.species_table[ id - 1 ].sta );
+		$('#species_atk').val( IvCalculator.species_table[ id - 1 ].atk );
+		$('#species_def').val( IvCalculator.species_table[ id - 1 ].def );
 	}
 });
 
@@ -32,15 +32,16 @@ $(document).on('click', '#button_run', function() {
 		'C': 'yellow'
 	};
 
-	let species = {
-		id: parseInt($('#species_id').val(), 10),
-		sta: parseInt($('#species_sta').val(), 10),
-		atk: parseInt($('#species_atk').val(), 10),
-		def: parseInt($('#species_def').val(), 10)
-	};
-
-	if( species.id ) {
-		species.name = IvCalculator.species_table[ species.id - 1 ][1];
+	let id = parseInt($('#species_id').val(), 10);
+	let species = null;
+	if( id ) {
+		species = IvCalculator.species_table[id - 1];
+	} else {
+		species = {
+			sta: parseInt($('#species_sta').val(), 10),
+			atk: parseInt($('#species_atk').val(), 10),
+			def: parseInt($('#species_def').val(), 10)
+		};
 	}
 
 	let appraisal = {
@@ -226,41 +227,16 @@ $(document).on('click', '#output button', function() {
 	let selected_combo = $(this).data('combo').clone();
 
 	let species_list = new Map();
-	species_list.set(selected_combo.species.id, selected_combo.species);
 
-	if( selected_combo.species.id ) {
-		let new_species = true;
-		while( new_species ) {
-			new_species = false;
-			for(let x of IvCalculator.evolution_mapping) {
-				if( species_list.has(x[1]) ) {
-					//Already added
-					continue;
-				}
+	let new_species_list = [selected_combo.species];
+	while( 0 < new_species_list.length ) {
+		let new_species = new_species_list.shift();
 
-				if( !species_list.has(x[0]) ) {
-					//Irrelevant
-					continue;
-				}
+		if( !new_species || !new_species.evolutions ) continue;
 
-				let species_data = IvCalculator.species_table[ x[1] - 1 ];
-				if( !species_data ) {
-					//Not yet in the game
-					continue;
-				}
+		species_list.set(new_species.id, new_species);
 
-				species = {
-					id: species_data[0],
-					name: species_data[1],
-					sta: species_data[2],
-					atk: species_data[3],
-					def: species_data[4]
-				};
-
-				species_list.set(species.id, species);
-				new_species = true;
-			}
-		}
+		new_species_list = new_species_list.concat(Array.from(new_species.evolutions.values()));
 	}
 
 	let id_inc = 0;
